@@ -8,218 +8,237 @@ import { NewsCard } from "@/components/news/news-card";
 import { CategoryTabs } from "@/components/news/category-tabs";
 import { CategorySection, categoryConfig } from "@/components/news/category-section";
 import { NewsSkeleton } from "@/components/news/skeleton";
-import type { RSSFeed } from "@/app/api/rss/route";
-import { TrendingUp, Clock, Newspaper, Flame } from "lucide-react";
+import type { RSSFeed, RSSItem } from "@/app/api/rss/route";
+import { 
+  TrendingUp, 
+  Clock, 
+  Newspaper, 
+  Flame, 
+  Mail, 
+  Facebook, 
+  Twitter, 
+  Instagram, 
+  Youtube, 
+  Trophy,
+  Map,
+  Globe2,
+  Coins,
+  Cpu,
+  FileText
+} from "lucide-react";
+
+// --- COMPONENTE: STORIES ---
+function NewsStories({ items }: { items: RSSItem[] }) {
+  return (
+    <div className="w-full border-b border-border bg-background py-4">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
+          {items.slice(0, 15).map((item, index) => (
+            <a key={`story-${index}`} href={item.link} target="_blank" rel="noopener noreferrer" className="flex flex-shrink-0 flex-col items-center gap-1 group">
+              <div className="relative p-[2.5px] rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 transition-transform group-hover:scale-105 active:scale-95">
+                <div className="bg-background rounded-full p-[2px]">
+                  <div className="h-16 w-16 overflow-hidden rounded-full border border-border bg-muted sm:h-20 sm:w-20">
+                    <img src={item.imageUrl || `https://picsum.photos/seed/${index}/200/200`} alt="" className="h-full w-full object-cover" />
+                  </div>
+                </div>
+              </div>
+              <span className="w-20 truncate text-center text-[11px] font-medium text-foreground">{item.source || "Destaque"}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- COMPONENTE: FOOTER ---
+function Footer() {
+  return (
+    <footer className="mt-16 border-t border-border bg-card/50 backdrop-blur-md">
+      <div className="mx-auto max-w-7xl px-4 py-12 text-foreground">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="rounded-lg bg-primary p-1.5"><Newspaper className="h-6 w-6 text-primary-foreground" /></div>
+              <span className="text-xl font-bold tracking-tighter">PORTAL<span className="text-primary">RSS</span></span>
+            </div>
+            <p className="text-sm text-muted-foreground">Sua fonte de notícias em tempo real. Tecnologia, economia, esportes e política mundial.</p>
+            <div className="flex gap-4">
+              <Facebook size={20} className="text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
+              <Twitter size={20} className="text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
+              <Instagram size={20} className="text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
+            </div>
+          </div>
+          <div>
+            <h3 className="mb-6 text-sm font-bold uppercase">Categorias</h3>
+            <ul className="space-y-3 text-sm text-muted-foreground">
+              <li className="hover:text-primary cursor-pointer">Esportes</li>
+              <li className="hover:text-primary cursor-pointer">Economia</li>
+              <li className="hover:text-primary cursor-pointer">Tecnologia</li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="mb-6 text-sm font-bold uppercase">Institucional</h3>
+            <ul className="space-y-3 text-sm text-muted-foreground">
+              <li className="hover:text-primary cursor-pointer">Sobre Nós</li>
+              <li className="hover:text-primary cursor-pointer">Privacidade</li>
+              <li className="hover:text-primary cursor-pointer">Contato</li>
+            </ul>
+          </div>
+          <div className="space-y-4">
+            <h3 className="mb-6 text-sm font-bold uppercase">Newsletter</h3>
+            <div className="relative">
+              <input type="email" placeholder="Seu e-mail" className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm focus:ring-2 focus:ring-primary/50 outline-none" />
+              <button className="absolute right-1 top-1 bg-primary p-1 rounded text-primary-foreground"><Mail size={16} /></button>
+            </div>
+          </div>
+        </div>
+        <div className="mt-12 border-t border-border/50 pt-8 text-center text-xs text-muted-foreground">
+          © {new Date().getFullYear()} Portal RSS. Todos os direitos reservados.
+        </div>
+      </div>
+    </footer>
+  );
+}
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-// Intervalo de atualizacao: 5 minutos
-const REFRESH_INTERVAL = 5 * 60 * 1000;
-
 export default function Home() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
-
   const { data, error, isLoading, mutate } = useSWR<RSSFeed>("/api/rss", fetcher, {
-    refreshInterval: REFRESH_INTERVAL,
+    refreshInterval: 300000,
     revalidateOnFocus: false,
-    onSuccess: () => {
-      setLastUpdate(new Date());
-    },
+    onSuccess: () => setLastUpdate(new Date()),
   });
 
-  const handleRefresh = useCallback(() => {
-    mutate();
-  }, [mutate]);
-
-  useEffect(() => {
-    if (data) {
-      setLastUpdate(new Date());
-    }
-  }, [data]);
+  const handleRefresh = useCallback(() => mutate(), [mutate]);
 
   const items = data?.items || [];
   const categories = data?.categories;
-
-  // Separa os itens para diferentes secoes
   const featuredItem = items[0];
   const secondaryItems = items.slice(1, 5);
-  const sidebarItems = items.slice(5, 15);
+  const sidebarItems = items.slice(5, 12);
 
-  if (error) {
-    return (
-      <div className="flex min-h-screen flex-col">
-        <Header lastUpdate={lastUpdate} isLoading={isLoading} onRefresh={handleRefresh} />
-        <main className="flex flex-1 items-center justify-center">
-          <div className="text-center">
-            <Newspaper className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-            <h2 className="mb-2 text-xl font-semibold">Erro ao carregar noticias</h2>
-            <p className="mb-4 text-muted-foreground">
-              Nao foi possivel buscar as noticias. Tente novamente.
-            </p>
-            <button
-              onClick={handleRefresh}
-              className="rounded-md bg-primary px-4 py-2 text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              Tentar novamente
-            </button>
-          </div>
-        </main>
-      </div>
-    );
-  }
+  if (error) return <div className="p-10 text-center">Erro ao carregar notícias.</div>;
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header lastUpdate={lastUpdate} isLoading={isLoading} onRefresh={handleRefresh} />
-
-      {/* News Ticker */}
       {items.length > 0 && <NewsTicker items={items} />}
+      {!isLoading && items.length > 0 && <NewsStories items={items} />}
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6">
-        {isLoading && items.length === 0 ? (
-          <NewsSkeleton />
-        ) : (
+        {isLoading && items.length === 0 ? <NewsSkeleton /> : (
           <>
-            {/* Destaque Principal */}
+            {/* 1. SEÇÃO PLANTÃO DE NOTÍCIAS */}
             {featuredItem && (
-              <section className="mb-8">
-                <div className="mb-4 flex items-center gap-2 border-b-2 border-primary pb-2">
+              <section className="mb-12">
+                <div className="mb-4 flex items-center gap-2 border-b-2 border-primary pb-2 text-foreground">
                   <Flame className="h-5 w-5 text-primary" />
-                  <h2 className="font-serif text-xl font-bold">Ultimas Noticias</h2>
+                  <h2 className="font-serif text-xl font-bold">Plantão de Notícias</h2>
                 </div>
                 <div className="grid gap-4 lg:grid-cols-3">
-                  {/* Noticia Principal */}
-                  <div className="lg:col-span-2">
-                    <NewsCard item={featuredItem} variant="featured" />
-                  </div>
-
-                  {/* Secundarias */}
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                    {secondaryItems.map((item, index) => (
-                      <article
-                        key={`${item.link}-${index}`}
-                        className="group flex gap-3 rounded-lg bg-card p-3 shadow-md transition-shadow hover:shadow-lg"
-                      >
-                        <a
-                          href={item.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex flex-1 gap-3"
-                        >
-                          <div className="relative h-16 w-24 flex-shrink-0 overflow-hidden rounded">
-                            <img
-                              src={
-                                item.imageUrl ||
-                                `https://picsum.photos/seed/${encodeURIComponent(item.title.substring(0, 15)) || "/placeholder.svg"}/200/150`
-                              }
-                              alt=""
-                              className="h-full w-full object-cover"
-                              onError={(e) => {
-                                e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(item.title.substring(0, 15))}/200/150`;
-                              }}
-                            />
-                          </div>
-                          <div className="flex flex-1 flex-col justify-center">
-                            {item.source && (
-                              <span className="mb-1 text-[10px] font-bold text-primary">{item.source}</span>
-                            )}
-                            <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-card-foreground transition-colors group-hover:text-primary">
-                              {item.title}
-                            </h3>
-                          </div>
-                        </a>
-                      </article>
+                  <div className="lg:col-span-2"><NewsCard item={featuredItem} variant="featured" /></div>
+                  <div className="flex flex-col gap-4">
+                    {secondaryItems.map((item, i) => (
+                      <div key={i} className="bg-card p-3 rounded-lg border border-border/50 flex gap-3 group cursor-pointer hover:bg-muted/50 transition-colors">
+                         <div className="h-16 w-20 flex-shrink-0 overflow-hidden rounded">
+                            <img src={item.imageUrl || `https://picsum.photos/seed/${i+10}/150/150`} className="h-full w-full object-cover transition-transform group-hover:scale-110" alt="" />
+                         </div>
+                         <div className="flex flex-1 flex-col justify-center">
+                            <span className="text-[10px] font-bold text-primary uppercase tracking-tighter">{item.source || "Geral"}</span>
+                            <h3 className="text-xs font-bold line-clamp-2 text-foreground leading-tight">{item.title}</h3>
+                         </div>
+                      </div>
                     ))}
                   </div>
                 </div>
               </section>
             )}
 
-            {/* Navegacao por Abas */}
-            {categories && <CategoryTabs categories={categories} />}
+            {/* 2. SEÇÃO DE ESPORTES */}
+            {categories?.esportes && (
+              <section className="mb-12">
+                <div className="mb-6 flex items-center justify-between border-b-2 border-red-600 pb-2 text-foreground">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="h-6 w-6 text-red-600" />
+                    <h2 className="font-serif text-2xl font-bold tracking-tight">Arena Esportes</h2>
+                  </div>
+                  <span className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Cobertura completa</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {categories.esportes.slice(0, 4).map((item, i) => (
+                    <NewsCard key={`sport-top-${i}`} item={item} variant="medium" />
+                  ))}
+                </div>
+              </section>
+            )}
 
-            {/* Secoes de Categorias em Grid */}
             {categories && (
-              <div className="space-y-8">
-                {/* Brasil e Mundo lado a lado em telas grandes */}
+              <div className="space-y-12">
                 <div className="grid gap-8 xl:grid-cols-2">
-                  <CategorySection
-                    title={categoryConfig.brasil.title}
-                    icon={categoryConfig.brasil.icon}
-                    items={categories.brasil}
-                    color={categoryConfig.brasil.color}
-                    variant="list"
-                  />
-                  <CategorySection
-                    title={categoryConfig.mundo.title}
-                    icon={categoryConfig.mundo.icon}
-                    items={categories.mundo}
-                    color={categoryConfig.mundo.color}
-                    variant="list"
-                  />
+                  <CategorySection title="Brasil" icon={Map} items={categories.brasil} color="#22c55e" variant="list" />
+                  <CategorySection title="Mundo" icon={Globe2} items={categories.mundo} color="#3b82f6" variant="list" />
                 </div>
+                
+                {/* ECONOMIA: 8 NOTÍCIAS EM GRID */}
+                <CategorySection title="Economia" icon={Coins} items={categories.economia?.slice(0, 8)} color="#eab308" variant="grid" />
+                
+                {/* --- NOVA SEÇÃO: ANÁLISE & OPINIÃO (ESTILO TEXTO) --- */}
+                <section className="my-12">
+                  <div className="mb-6 flex items-center gap-2 border-b-2 border-orange-500 pb-2 text-foreground">
+                    <FileText className="h-6 w-6 text-orange-500" />
+                    <h2 className="font-serif text-2xl font-bold tracking-tight">Análise & Opinião</h2>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {(categories.geral || items).slice(10, 14).map((item, i) => (
+                      <a key={`opinion-${i}`} href={item.link} target="_blank" rel="noopener noreferrer" className="group flex flex-col justify-between p-5 rounded-xl border border-border bg-card hover:shadow-lg hover:border-orange-500/50 transition-all">
+                        <div>
+                          <div className="mb-3 flex items-center gap-2">
+                            <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{item.source || "Análise"}</span>
+                          </div>
+                          <h3 className="text-sm font-bold leading-snug text-foreground group-hover:text-orange-500 transition-colors line-clamp-3">{item.title}</h3>
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-border/50">
+                          <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">Ler reflexão completa →</span>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </section>
 
-                {/* Economia - Layout horizontal completo */}
-                <CategorySection
-                  title={categoryConfig.economia.title}
-                  icon={categoryConfig.economia.icon}
-                  items={categories.economia}
-                  color={categoryConfig.economia.color}
-                  variant="horizontal"
-                />
-
-                {/* Tecnologia - Grid */}
-                <CategorySection
-                  title={categoryConfig.tecnologia.title}
-                  icon={categoryConfig.tecnologia.icon}
-                  items={categories.tecnologia}
-                  color={categoryConfig.tecnologia.color}
-                  variant="grid"
-                />
-
-                {/* Esportes e Entretenimento lado a lado */}
-                <div className="grid gap-8 xl:grid-cols-2">
-                  <CategorySection
-                    title={categoryConfig.esportes.title}
-                    icon={categoryConfig.esportes.icon}
-                    items={categories.esportes}
-                    color={categoryConfig.esportes.color}
-                    variant="list"
-                  />
-                  <CategorySection
-                    title={categoryConfig.entretenimento.title}
-                    icon={categoryConfig.entretenimento.icon}
-                    items={categories.entretenimento}
-                    color={categoryConfig.entretenimento.color}
-                    variant="list"
-                  />
-                </div>
+                <CategorySection title="Tecnologia" icon={Cpu} items={categories.tecnologia} color="#a855f7" variant="grid" />
               </div>
             )}
 
-            {/* Sidebar com Mais Recentes */}
-            <div className="mt-8 grid gap-6 lg:grid-cols-3">
+            <div className="mt-12 grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2">
-                <div className="mb-4 flex items-center gap-2 border-b-2 border-primary pb-2">
+                <div className="mb-4 flex items-center gap-2 border-b-2 border-primary pb-2 font-bold text-foreground">
                   <TrendingUp className="h-5 w-5 text-primary" />
-                  <h2 className="font-serif text-xl font-bold">Destaques do Dia</h2>
+                  Destaques do Dia
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {items.slice(0, 6).map((item, index) => (
-                    <NewsCard key={`highlight-${item.link}-${index}`} item={item} variant="medium" />
-                  ))}
+                  {items.slice(12, 18).map((item, i) => <NewsCard key={i} item={item} variant="medium" />)}
                 </div>
               </div>
 
               <aside>
-                <div className="rounded-lg bg-card p-4 shadow-md">
-                  <div className="mb-4 flex items-center gap-2 border-b-2 border-accent pb-2">
-                    <Clock className="h-4 w-4 text-accent" />
-                    <h2 className="font-serif text-lg font-bold text-card-foreground">Mais Recentes</h2>
-                  </div>
-                  <div className="space-y-0">
-                    {sidebarItems.map((item, index) => (
-                      <NewsCard key={`sidebar-${item.link}-${index}`} item={item} variant="small" />
+                <div className="bg-card p-5 rounded-xl border border-border shadow-sm sticky top-24">
+                  <h2 className="mb-6 flex items-center gap-2 font-bold border-b border-border/50 pb-3 text-foreground uppercase text-sm tracking-widest">
+                    <Clock size={16} className="text-accent" /> 
+                    Mais Recentes
+                  </h2>
+                  <div className="space-y-5">
+                    {sidebarItems.map((item, i) => (
+                      <a key={i} href={item.link} target="_blank" rel="noopener noreferrer" className="block group">
+                        <div className="flex gap-3">
+                          <span className="text-xl font-black text-muted-foreground/30 group-hover:text-primary transition-colors">0{i+1}</span>
+                          <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-relaxed">
+                            {item.title}
+                          </div>
+                        </div>
+                      </a>
                     ))}
                   </div>
                 </div>
@@ -228,21 +247,7 @@ export default function Home() {
           </>
         )}
       </main>
-
-      {/* Footer */}
-      <footer className="border-t border-border bg-card py-6">
-        <div className="mx-auto max-w-7xl px-4 text-center">
-          <p className="text-sm text-muted-foreground">Portal RSS - Noticias agregadas de multiplas fontes</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Atualizacao automatica a cada 5 minutos | Brasil | Mundo | Economia | Tecnologia | Esportes |
-            Entretenimento
-          </p>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Fontes: UOL, G1, Folha, CNN Brasil, Agencia Brasil, BBC Brasil, InfoMoney, TecMundo, Tecnoblog, Canaltech,
-            Olhar Digital, Lance, Omelete e mais
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
