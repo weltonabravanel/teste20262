@@ -1,11 +1,11 @@
+//v0-user-next.config.mjs
 /** @type {import('next').NextConfig} */
+
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  images: {
-    unoptimized: true,
-  },
+
+  assetPrefix: process.env.ASSET_PREFIX ?? undefined,
+
 }
+
 
 export default nextConfig
