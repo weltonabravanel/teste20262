@@ -24,7 +24,8 @@ import {
   Globe2,
   Coins,
   Cpu,
-  FileText
+  FileText,
+  PlayCircle
 } from "lucide-react";
 
 // --- COMPONENTE: STORIES ---
@@ -166,9 +167,40 @@ export default function Home() {
                   </div>
                   <span className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Cobertura completa</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                {/* Grid Principal Esportes */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                   {categories.esportes.slice(0, 4).map((item, i) => (
                     <NewsCard key={`sport-top-${i}`} item={item} variant="medium" />
+                  ))}
+                </div>
+
+                {/* --- SEÇÃO SHORTS DE NOTÍCIAS (6 ITENS) --- */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {categories.esportes.slice(4, 10).map((item, i) => (
+                    <a 
+                      key={`sport-short-${i}`} 
+                      href={item.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="group relative aspect-[9/16] overflow-hidden rounded-xl bg-muted shadow-md"
+                    >
+                      <img 
+                        src={item.imageUrl || `https://picsum.photos/seed/sport-${i}/400/700`} 
+                        alt="" 
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                      <div className="absolute bottom-0 p-3 w-full">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <PlayCircle className="h-3 w-3 text-red-500" />
+                          <span className="text-[9px] font-bold text-white/80 uppercase tracking-widest">Short News</span>
+                        </div>
+                        <h3 className="text-[11px] font-bold leading-tight text-white line-clamp-3 group-hover:text-red-400 transition-colors">
+                          {item.title}
+                        </h3>
+                      </div>
+                    </a>
                   ))}
                 </div>
               </section>
@@ -181,10 +213,8 @@ export default function Home() {
                   <CategorySection title="Mundo" icon={Globe2} items={categories.mundo} color="#3b82f6" variant="list" />
                 </div>
                 
-                {/* ECONOMIA: 8 NOTÍCIAS EM GRID */}
                 <CategorySection title="Economia" icon={Coins} items={categories.economia?.slice(0, 8)} color="#eab308" variant="grid" />
                 
-                {/* --- NOVA SEÇÃO: ANÁLISE & OPINIÃO (ESTILO TEXTO) --- */}
                 <section className="my-12">
                   <div className="mb-6 flex items-center gap-2 border-b-2 border-orange-500 pb-2 text-foreground">
                     <FileText className="h-6 w-6 text-orange-500" />
