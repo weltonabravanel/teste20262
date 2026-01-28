@@ -209,12 +209,12 @@ export default function Home() {
               </section>
             )}
  {/* --- NOVA SEÇÃO: ÚLTIMAS NOTÍCIAS (GERAL) - ANTES DE ESPORTES --- */}
-            {(categories?.geral || items.length > 0) && (
+            {(categories?.brasil || items.length > 0) && (
               <div className="mb-12">
                 <CategorySection 
                   title="Últimas Notícias" 
                   icon={LayoutGrid} 
-                  items={categories?.geral || items.slice(0, 4)} 
+                  items={categories?.brasil || items.slice(0, 4)} 
                   color="#64748b" 
                   variant="grid" 
                 />
