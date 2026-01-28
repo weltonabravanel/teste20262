@@ -1,12 +1,18 @@
 {
-  "name": "my-v0-project",
-  "version": "0.1.0",
-  "private": true,
+  "name": "2048-in-react",
+  "version": "0.2.0",
+  "homepage": "https://github.com/weltonabravanel/nextteste",
+  "author": "Welton kleber (https://braziltube/)",
+  "license": "MIT",
   "scripts": {
-    "build": "next build",
     "dev": "next dev",
-    "lint": "eslint .",
-    "start": "next start"
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "check-code": "prettier --check .",
+    "format": "prettier --write .",
+    "test": "jest --watch",
+    "test-coverage": "jest --coverage --verbose"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
